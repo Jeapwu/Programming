@@ -12,11 +12,13 @@ std::condition_variable queueCondvar;
 
 void provider(int var){
     for(int i=0;i<6;i++){
-        std::lock_guard<std::mutex> lg(queueMutex);
-        queue.push(var+i);
-    }
-    queueCondvar.notify_one();
-    std::this_thread::sleep_for(std::chrono::milliseconds(var));
+        {
+            std::lock_guard<std::mutex> lg(queueMutex);
+            queue.push(var+i);
+        }
+        queueCondvar.notify_one();
+        std::this_thread::sleep_for(std::chrono::milliseconds(var));
+    }  
 }
 
 void consumer(int num){
@@ -37,7 +39,7 @@ int main(){
     auto p2=std::async(std::launch::async,provider,300);
     auto p3=std::async(std::launch::async,provider,500);
     
-    auto c1=std::async(std::launch::async,consumer,1);
-    auto c2=std::async(std::launch::async,consumer,2);
+    auto c2=std::async(std::launch::async,consumer,1);
+    auto c1=std::async(std::launch::async,consumer,2);
 } 
 
